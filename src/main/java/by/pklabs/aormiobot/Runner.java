@@ -8,14 +8,11 @@ import net.dv8tion.jda.api.OnlineStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
 public class Runner {
     private static final Logger logger = LoggerFactory.getLogger(Runner.class);
 
     public static void main(String[] args) {
-        Config configParser = Config.getConfigInstance();
-        Map<String, String> config = configParser.getConfig();
+        Config config = Config.getInstance();
         String token = config.get("token");
         try {
             CommandClient commandClient = buildCommandClient(config);
@@ -30,7 +27,7 @@ public class Runner {
         }
     }
 
-    private static CommandClient buildCommandClient(Map<String, String> config) {
+    private static CommandClient buildCommandClient(Config config) {
         CommandClientBuilder builder = new CommandClientBuilder();
         logger.debug("guildId " + config.get("guildId"));
         builder.forceGuildOnly(config.get("guildId"))

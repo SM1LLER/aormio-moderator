@@ -22,7 +22,7 @@ public class Config {
         readConfig();
     }
 
-    public static Config getConfigInstance(){
+    public static Config getInstance(){
         if(instance == null){
             instance = new Config();
         }
@@ -42,9 +42,11 @@ public class Config {
         logger.info("Loaded config");
     }
 
-    public Map<String, String> getConfig() {
-        return this.config;
+    public String get(String key){
+        return config.get(key);
     }
+
+
 
 
 }
