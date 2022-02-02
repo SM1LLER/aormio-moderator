@@ -1,6 +1,7 @@
 package by.pklabs.aormiobot.command;
 
 import by.pklabs.aormiobot.Config;
+import by.pklabs.aormiobot.database.Database;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -11,10 +12,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 public class MuteCommand extends SlashCommand {
     private static final Logger logger = LoggerFactory.getLogger(MuteCommand.class);
@@ -42,10 +43,11 @@ public class MuteCommand extends SlashCommand {
     @Override
     protected void execute(SlashCommandEvent event) {
         event.deferReply().setEphemeral(true).queue();
+
         User user = null;
         User moderator = event.getUser();
         String reason = null;
-        TimeUnit timeUnit = null;
+        ChronoUnit timeUnit = null;
         String timeEnd = "";
         long time = 0;
         for (OptionMapping opMap : event.getOptions()){
@@ -57,7 +59,7 @@ public class MuteCommand extends SlashCommand {
                     reason = opMap.getAsString();
                     break;
                 case "timeunit":
-                    timeUnit = TimeUnit.valueOf(opMap.getAsString().toUpperCase());
+                    timeUnit = ChronoUnit.valueOf(opMap.getAsString().toUpperCase());
                     switch(timeUnit){
                         case DAYS:
                             timeEnd = "д.";
@@ -77,20 +79,29 @@ public class MuteCommand extends SlashCommand {
         }
         Guild guild = event.getGuild();
         logger.debug("Searching member for guild " + guild.getName());
-
         Member memberToMute = guild.retrieveMember(user).complete();;
 
         Role muteRole = guild.getRoleById(MUTE_ROLE_ID);
+        MessageChannel logChannel = event.getGuild().getTextChannelById(LOG_CHANNEL_ID);
+        EmbedBuilder embed = new EmbedBuilder();
         if(!memberToMute.getRoles().contains(muteRole)){
             guild.addRoleToMember(memberToMute, muteRole).complete();
-            MessageChannel logChannel = event.getGuild().getTextChannelById(LOG_CHANNEL_ID);
-            EmbedBuilder embed = new EmbedBuilder();
+            Database.insertMuted(memberToMute.getIdLong(), LocalDateTime.now().plus(time, timeUnit));
             embed.setAuthor(user.getName() + "#" + user.getDiscriminator(), null, user.getAvatarUrl())
                     .setTitle("Пользователю выдан мут")
                     .setDescription(user.getAsMention() + " получил мут на " + time + " " + timeEnd)
                     .setFooter(moderator.getName(), moderator.getAvatarUrl());
             logChannel.sendMessageEmbeds(embed.build()).complete();
+            event.getHook().sendMessage("Пользователь успешно заглушён").setEphemeral(true).queue();
+        } else {
+            Database.insertMuted(memberToMute.getIdLong(), LocalDateTime.now().plus(time, timeUnit));
+            embed.setAuthor(user.getName() + "#" + user.getDiscriminator(), null, user.getAvatarUrl())
+                    .setTitle("Обновлено время мута")
+                    .setDescription(user.getAsMention() + " получил мут на " + time + " " + timeEnd)
+                    .setFooter(moderator.getName(), moderator.getAvatarUrl());
+            logChannel.sendMessageEmbeds(embed.build()).complete();
+            event.getHook().sendMessage("Обновлено время заглушения для пользователя").setEphemeral(true).queue();
         }
-        event.getHook().sendMessage("Мут выдан").setEphemeral(true).queue();
+
     }
 }

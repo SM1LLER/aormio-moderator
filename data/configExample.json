@@ -5,5 +5,8 @@
   "moderatorRoleId": "",
   "adminRoleId": "",
   "muteRoleId":"",
-  "logChannelId": ""
+  "logChannelId": "",
+  "jdbcUrl": "",
+  "databaseUser": "",
+  "databasePassword": ""
 }
