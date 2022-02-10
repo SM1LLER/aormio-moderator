@@ -1,12 +1,14 @@
 package by.pklabs.aormiobot;
+import by.pklabs.aormiobot.command.BanCommand;
 import by.pklabs.aormiobot.command.MuteCommand;
 import by.pklabs.aormiobot.command.UnmuteCommand;
-import by.pklabs.aormiobot.database.Database;
+import by.pklabs.aormiobot.service.UnmuteTimeChecker;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +21,9 @@ public class Runner {
     private static ScheduledExecutorService threadpool;
 
     public static void main(String[] args) {
-        Database.init();
         Config config = Config.getInstance();
         String token = config.get("token");
-        threadpool = Executors.newScheduledThreadPool(10, r -> new Thread(r, "vortex"));
+        threadpool = Executors.newScheduledThreadPool(10, r -> new Thread(r, "unmute-thread"));
         try {
             CommandClient commandClient = buildCommandClient(config);
             JDA api = JDABuilder.createDefault(token)
@@ -31,8 +32,10 @@ public class Runner {
                     .build();
             api.awaitReady();
             api.updateCommands();
+            api.getPresence().setActivity(Activity.playing("Следит за сервером"));
+            UnmuteTimeChecker unmuteChecker = new UnmuteTimeChecker(api.getGuildById(config.get("guildId")));
             threadpool.scheduleWithFixedDelay(() ->
-                    Database.checkUnmutes(api.getGuildById(config.get("guildId"))), 0, 45, TimeUnit.SECONDS);
+                    unmuteChecker.checkUnmutes(), 0, 45, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
@@ -44,7 +47,8 @@ public class Runner {
         builder.forceGuildOnly(config.get("guildId"))
                 .setOwnerId(config.get("ownerId"))
                 .addSlashCommand(new MuteCommand())
-                .addSlashCommand(new UnmuteCommand());
+                .addSlashCommand(new UnmuteCommand())
+                .addSlashCommand(new BanCommand());
         return builder.build();
     }
 }

@@ -7,7 +7,7 @@ mainClassName = 'by.pklabs.aormiobot.Runner'
 
 sourceCompatibility = targetCompatibility = 1.8
 group 'by.pashtet-labs'
-version '0.3b'
+version '0.6b'
 
 repositories {
     mavenCentral()
