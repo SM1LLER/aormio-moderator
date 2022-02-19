@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 
 public class MessageSender {
     private static final Logger logger = LoggerFactory.getLogger(MessageSender.class);
-    private final String TIME_FORMAT = "dd/MM/yy HH:mm:ss";
+    private final String TIME_FORMAT = "dd/MM/yy HH:mm";
     private TextChannel channel;
 
     public MessageSender(TextChannel channel){
@@ -20,13 +20,16 @@ public class MessageSender {
     }
 
     public void sendMutedMessage(User user, User moderator, String reason, long time,
-                                    String timeEnd, boolean isUpdate){
+                                    String timeEnd, LocalDateTime muteTime, boolean isUpdate){
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(Color.ORANGE);
         embed.setAuthor(user.getName() + "#" + user.getDiscriminator(), null, user.getAvatarUrl())
                 .setTitle(isUpdate ? "Обновлено время мута" : "Пользователю выдан мут")
                 .setDescription(user.getAsMention() + " получил мут на " + time + " " + timeEnd)
                 .addField("Причина", reason, false)
+                .addField("Мут будет снят: ",
+                                "`" + muteTime.format(DateTimeFormatter.ofPattern(TIME_FORMAT)) + "`",
+                            false)
                 .setFooter(moderator.getName() + " | "
                                 + LocalDateTime.now().plusHours(3).format(DateTimeFormatter.ofPattern(TIME_FORMAT))
                         , moderator.getAvatarUrl());

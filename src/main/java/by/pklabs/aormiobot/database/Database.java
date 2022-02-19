@@ -62,8 +62,10 @@ public class Database {
                 con = ds.getConnection();
             }
             logger.debug("Inserting in database");
-            PreparedStatement ps = con.prepareStatement("INSERT INTO muted_users(user, unmute_time)"
-                    + "VALUES(?, ?)");
+            PreparedStatement ps = con.prepareStatement("SET @user = ?, @unmute_time = ?;"
+                                                        + "INSERT INTO muted_users(user, unmute_time)"
+                                                        + "VALUES(@user, @unmute_time)"
+                                                        + "ON DUPLICATE KEY UPDATE user = @user, unmute_time = @unmute_time;");
             ps.setLong(1, userId);
             ps.setTimestamp(2, Timestamp.valueOf(unmuteTime));
             ps.executeUpdate();

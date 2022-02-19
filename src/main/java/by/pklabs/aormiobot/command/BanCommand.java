@@ -18,7 +18,6 @@ import java.util.List;
 public class BanCommand extends SlashCommand {
     private static final Logger logger = LoggerFactory.getLogger(UnmuteCommand.class);
     private final Config config = Config.getInstance();
-    private final String MUTE_ROLE_ID = config.get("muteRoleId");
     private final String ADMIN_ROLE_ID = config.get("adminRoleId");
     private final String MODERATOR_ROLE_ID = config.get("moderatorRoleId");
     private final String LOG_CHANNEL_ID = config.get("logChannelId");

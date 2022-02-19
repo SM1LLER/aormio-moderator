@@ -29,7 +29,7 @@ public class UnmuteTimeChecker {
         try{
             ResultSet rs = db.getAll();
             logger.debug(rs.toString());
-            LocalDateTime currTime = LocalDateTime.now();
+            LocalDateTime currTime = LocalDateTime.now().plusHours(3);
             while (rs.next()){
                 LocalDateTime unmuteDate = rs.getTimestamp("unmute_time").toLocalDateTime();
                 if(currTime.isAfter(unmuteDate)){

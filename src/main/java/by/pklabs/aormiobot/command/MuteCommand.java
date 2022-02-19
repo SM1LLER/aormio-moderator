@@ -69,14 +69,15 @@ public class MuteCommand extends SlashCommand {
 
         Member memberToMute = guild.retrieveMember(user).complete();;
         Role muteRole = guild.getRoleById(MUTE_ROLE_ID);
+        LocalDateTime muteTime = LocalDateTime.now().plus(time, timeUnit).plusHours(3);
         if(!memberToMute.getRoles().contains(muteRole)){
             guild.addRoleToMember(memberToMute, muteRole).complete();
-            db.insertMuted(memberToMute.getIdLong(), LocalDateTime.now().plus(time, timeUnit));
-            msgSender.sendMutedMessage(user, moderator, reason, time, timeEnd, false);
+            db.insertMuted(memberToMute.getIdLong(), muteTime);
+            msgSender.sendMutedMessage(user, moderator, reason, time, timeEnd, muteTime, false);
             event.getHook().sendMessage("Пользователь успешно заглушён").setEphemeral(true).queue();
         } else {
-            db.insertMuted(memberToMute.getIdLong(), LocalDateTime.now().plus(time, timeUnit));
-            msgSender.sendMutedMessage(user, moderator, reason, time, timeEnd, true);
+            db.insertMuted(memberToMute.getIdLong(), muteTime);
+            msgSender.sendMutedMessage(user, moderator, reason, time, timeEnd, muteTime, true);
             event.getHook().sendMessage("Обновлено время заглушения для пользователя").setEphemeral(true).queue();
         }
 
