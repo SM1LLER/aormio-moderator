@@ -83,7 +83,6 @@ public class Database {
             PreparedStatement ps = con.prepareStatement("DELETE FROM muted_users WHERE user = ?");
             ps.setLong(1, userId);
             ps.executeUpdate();
-            logger.debug("Deleted");
         }catch (SQLException e){
             logger.error(e.getMessage());
         }

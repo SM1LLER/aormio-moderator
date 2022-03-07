@@ -7,7 +7,7 @@ mainClassName = 'by.pklabs.aormiobot.Runner'
 
 sourceCompatibility = targetCompatibility = 1.8
 group 'by.pashtet-labs'
-version '0.7b'
+version '0.8b'
 
 repositories {
     mavenCentral()
@@ -27,6 +27,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
     implementation group: 'com.zaxxer', name: 'HikariCP', version: '5.0.1'
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
+}
+
+shadowJar{
+    archiveFileName = "${project.name}-${project.version}.${extension}"
 }
 
 compileJava.options.encoding = 'UTF-8'

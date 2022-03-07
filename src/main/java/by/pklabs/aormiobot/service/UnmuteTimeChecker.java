@@ -28,22 +28,19 @@ public class UnmuteTimeChecker {
     public void checkUnmutes(){
         try{
             ResultSet rs = db.getAll();
-            logger.debug(rs.toString());
             LocalDateTime currTime = LocalDateTime.now().plusHours(3);
-            while (rs.next()){
+            while (rs.next()) {
                 LocalDateTime unmuteDate = rs.getTimestamp("unmute_time").toLocalDateTime();
                 if(currTime.isAfter(unmuteDate)){
                     long userId = rs.getLong("user");
-                    Member memberToUnmute = guild.retrieveMemberById(userId).complete();
-                    if(memberToUnmute == null){
-                        rs.deleteRow();
+                    guild.retrieveMemberById(userId).queue(memberToUnmute -> {
+                        guild.removeRoleFromMember(memberToUnmute, muteRole).queue();
+                        db.deleteMuted(userId);
+                        msgSender.sendAutoUnmutedMessage(memberToUnmute.getUser());
+                    }, error -> {
+                        db.deleteMuted(userId);
                         logger.info("No such member in guild");
-                        continue;
-                    }
-                    User user = memberToUnmute.getUser();
-                    guild.removeRoleFromMember(memberToUnmute, muteRole).complete();
-                    rs.deleteRow();
-                    msgSender.sendAutoUnmutedMessage(user);
+                    });
                 }
             }
         } catch (SQLException e){
